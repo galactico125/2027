@@ -2478,7 +2478,7 @@ async function init(){
 // FITNESS MODULE: year-long plan, 4 sessions a week. Paste ABOVE "init();"
 // =====================================================================
 KEYS.push('workouts','fit');
-const FIT_START='2026-11-02',FIT_WEEKS=58,FIT_END=addDays(FIT_START,FIT_WEEKS*7-1);
+const FIT_START='2026-11-09',FIT_WEEKS=55,FIT_END=addDays(FIT_START,FIT_WEEKS*7-1);
 const FIT_ORDER=['UA','LA','UB','LB'];
 const FIT_NAME={UA:'Upper A',LA:'Lower A',UB:'Upper B',LB:'Lower B',X:'Session'};
 const FIT_FOCUS={UA:'Chest, back, shoulders and arms',LA:'Quads, hamstrings, calves and core',UB:'Back, shoulders and arms',LB:'Glutes, hamstrings, calves and core'};
@@ -4212,70 +4212,6 @@ Object.assign(extraChange,{
 '#x-print table{width:100%;border-collapse:collapse;font-size:8.5pt}#x-print th,#x-print td{border:1px solid #444;padding:3px 5px;vertical-align:top;background:#fff;color:#000}#x-print .grid td{height:16px}'+
 '#x-print .lines{height:70px;border-bottom:1px solid #444}@page{size:A4;margin:10mm}}';
 document.head.appendChild(s);})();
-// =====================================================================
-// START-DATE MOVE: Day 1 is Sun 1 Nov 2026. Paste ABOVE the final "init();", below every other add-on.
-// =====================================================================
-(function(){
- const SHIFT=14,KEEP_END='2027-08-15',DROP_END='2027-08-29';
- const mv=d=>d<=KEEP_END?addDays(d,SHIFT):(d<=DROP_END?null:d);
- const fixDue=s=>String(s).replace(/\(due (\d\d)-(\d\d)\)/g,(m,mm,dd)=>'(due '+addDays((mm>='10'?'2026-':'2027-')+mm+'-'+dd,SHIFT).slice(5)+')');
- const fixMock=s=>String(s).replace(/MOCK (\d+)/g,(m,n)=>'MOCK '+(+n>=10?+n-1:+n));
- const days=[];
- PLAN.days.forEach(d=>{
-  const nd=mv(d.date);if(!nd)return;
-  d.date=nd;d.title=fixMock(d.title);
-  if(d.pace)d.pace=fixDue(d.pace);
-  d.deliver=d.deliver.map(fixDue);
-  d.week=String(d.week).replace(/^Practice week (\d+) of 17$/,'Practice week $1 of 15');
-  days.push(d);
- });
- Object.assign(days[0],{title:'Quant: Percentages kickoff (learn)',tag:'',
-  steps:[[10,'Warm-up: clear due flashcards, then calculation drill: Squares 1 to 30 and cubes 1 to 10'],
-   [25,'Learn: Percentage basics and the fraction-to-percent table (1/2 to 1/20). Write a one-page summary: definitions, the table, two traps.'],
-   [20,'Guided practice: 10 Level-1 problems on percentage basics. Write full working.'],
-   [5,'Log: Quant minutes, set Percentages to Learning. Add 3 flashcards: Percent change = (new - old)/old x 100 | Successive changes of a% and b% = a + b + ab/100 % | x% of y = y% of x']],
-  deliver:['One-page Percentages summary','10 Level-1 problems solved with working','3 formula flashcards added'],
-  mvd:'15 minutes: read the subtopic notes and do 5 problems.',
-  log:'Dashboard: log Quant minutes; add flashcards; set status to Learning.'});
- days.unshift({date:'2026-11-01',dow:'Sun',n:1,phase:'Foundation',title:'Day 1: setup and baseline tests',sec:'Quant + VARC',topic:'Baseline',focus:'Setup and baseline',slot:'3:00 to 4:00 pm',mins:60,
-  steps:[[8,'Setup: open the dashboard, Data tab, confirm Day 1 is 1 Nov 2026 and the exam date is 28 Nov 2027. Add a target percentile if you have one.'],
-   [12,'Baseline Quant: 8 mixed problems (percentages, ratio, equations, geometry), timed, no calculator.'],
-   [9,'Baseline VARC: one RC, timed at 9 minutes.'],
-   [6,'Write your scores and the 3 topics that felt weakest. Log the misses in the Error log.'],
-   [20,'Plan week 1: read the planner cards for 2 to 8 Nov, gather your Percentages material, and block the evening slots in your calendar.'],
-   [5,'Log Quant and VARC minutes, and set tomorrow\'s priority in the Today tab: Percentages kickoff.']],
-  subs:[],deliver:['Baseline scores written down (Quant /8, VARC /4)','List of 3 weakest topics','Week 1 slots blocked in your calendar'],
-  mvd:'Do only the baseline RC and write down your score.',log:'Dashboard: Today tab, notes; Error log.',tag:'test',stretch:'',week:'Orientation (before learning week 1)'});
- days.forEach((d,i)=>{d.n=i+1;});
- PLAN.days=days;
- PLAN.topics.forEach(t=>{t.from=addDays(t.from,SHIFT);t.to=addDays(t.to,SHIFT);t.due=addDays(t.due,SHIFT);});
- const keys=[{date:'2026-11-01',what:'Day 1: setup and baseline tests'},{date:'2026-11-02',what:'Learning week 1 begins: Percentages'}];
- PLAN.keys.forEach(k=>{if(/^Day 1/.test(k.what))return;const nd=mv(k.date);if(nd)keys.push({date:nd,what:fixMock(k.what)});});
- PLAN.keys=keys;
- const ph={Foundation:['2026-11-01','2027-01-30'],Concepts:['2027-01-31','2027-05-16'],Practice:['2027-05-17','2027-08-31']};
- PLAN.phases.forEach(p=>{if(ph[p.name]){p.from=ph[p.name][0];p.to=ph[p.name][1];}});
-})();
-// Weeks count from the first Monday on or after Day 1, so the Study plan matches the planner.
-function p1Anchor(){const s=state.meta.startDate,w=parse(s).getDay();return w===1?s:addDays(s,(8-w)%7);}
-planSettings=function(){
- const s=p1Anchor(),c=state.meta.catDate,total=Math.max(1,daysBetween(s,c));
- let cw=28;if(total<260)cw=Math.max(8,Math.floor((total-100)/7));
- return {s,c,cw,foundationEnd:addDays(s,89),conceptsEnd:addDays(s,cw*7-1),sprintStart:addDays(c,-88)};
-};
-phaseOn=function(d){
- const s=state.meta.startDate,c=state.meta.catDate,a=p1Anchor();
- if(d<s)return {cat:'Starts on '+fmtLong(s),other:''};
- if(d>c)return {cat:'The exam date has passed. Review your result and plan the next step.',other:''};
- if(d<a)return {cat:'Orientation: setup, baseline tests and planning week 1',other:'Plan your first training week'};
- const idx=daysBetween(a,d);let cat;
- if(idx<90)cat='Foundation: Quant basics, daily reading, habit setup';
- else if(idx<planSettings().cw*7)cat='Concepts: work through the whole syllabus, start light DILR';
- else if(d<addDays(c,-88))cat='Practice: sectionals, topic tests and error review';
- else cat='Mock sprint: full mocks, analysis and error log';
- const q=Math.floor(idx/91);
- const others=['Excel and SQL in short sessions, photography basics, start the SIP','System design, public speaking, launch the blog or Instagram page','Business fundamentals reading, script writing','First short film shoot, monetization groundwork'];
- return {cat,other:q>3?'Keep the habits going and taper other skills':others[q]};
-};
 // =====================================================================
 // FEATURE PACK 4 · PART 1 of 6: foundation and data safety.
 // Paste ABOVE the final "init();" and BELOW the start-date block.
@@ -6781,6 +6717,142 @@ const _fsToday=renderToday;
 renderToday=function(){
  const b=fsOn()&&fsy.status==='error'&&fsGet(FS_DIRTY)==='1'&&!x2PlayOn?'<div class="banner warn"><span><strong>Not synced yet.</strong> '+esc(fsErrText(fsy.err))+'</span><button type="button" class="btn small" data-action="sync-now">Try again</button></div>':'';
  return b+_fsToday();
+};
+// =====================================================================
+// START DATE: Day 1 is Mon 9 Nov 2026. Replaces the old "START-DATE MOVE" block.
+// =====================================================================
+const P1_START='2026-11-09';
+(function(){
+ const SHIFT=21,KEEP_END='2027-08-08',DROP_END='2027-08-29';
+ const mv=d=>d<=KEEP_END?addDays(d,SHIFT):(d<=DROP_END?null:d);
+ const fixDue=s=>String(s).replace(/\(due (\d\d)-(\d\d)\)/g,(m,mm,dd)=>'(due '+addDays((mm>='10'?'2026-':'2027-')+mm+'-'+dd,SHIFT).slice(5)+')');
+ const fixMock=s=>String(s).replace(/MOCK (\d+)/g,(m,n)=>'MOCK '+(+n>=10?+n-1:+n));
+ const days=[];
+ PLAN.days.forEach(d=>{
+  const nd=mv(d.date);if(!nd)return;
+  d.date=nd;d.title=fixMock(d.title);
+  if(d.pace)d.pace=fixDue(d.pace);
+  d.deliver=d.deliver.map(fixDue);
+  d.week=String(d.week).replace(/^Practice week (\d+) of 17$/,'Practice week $1 of 14');
+  days.push(d);
+ });
+ days[0].steps[0][1]='Setup: open the dashboard, Data tab, confirm Day 1 is 9 Nov 2026 and the exam date is 28 Nov 2027.';
+ days.forEach((d,i)=>{d.n=i+1;});
+ PLAN.days=days;
+ PLAN.topics.forEach(t=>{t.from=addDays(t.from,SHIFT);t.to=addDays(t.to,SHIFT);t.due=addDays(t.due,SHIFT);});
+ PLAN.keys=PLAN.keys.map(k=>{const nd=mv(k.date);return nd?{date:nd,what:fixMock(k.what)}:null;}).filter(Boolean);
+ const ph={Foundation:['2026-11-09','2027-02-06'],Concepts:['2027-02-07','2027-05-23'],Practice:['2027-05-24','2027-08-31']};
+ PLAN.phases.forEach(p=>{if(ph[p.name]){p.from=ph[p.name][0];p.to=ph[p.name][1];}});
+})();
+function p1Anchor(){const s=state.meta.startDate,w=parse(s).getDay();return w===1?s:addDays(s,(8-w)%7);}
+planSettings=function(){
+ const s=p1Anchor(),c=state.meta.catDate,total=Math.max(1,daysBetween(s,c));
+ let cw=28;if(total<260)cw=Math.max(8,Math.floor((total-100)/7));
+ return {s,c,cw,foundationEnd:addDays(s,89),conceptsEnd:addDays(s,cw*7-1),sprintStart:addDays(c,-88)};
+};
+phaseOn=function(d){
+ const s=state.meta.startDate,c=state.meta.catDate,a=p1Anchor();
+ if(d<s)return {cat:'Starts on '+fmtLong(s),other:''};
+ if(d>c)return {cat:'The exam date has passed. Review your result and plan the next step.',other:''};
+ if(d<a)return {cat:'Orientation: setup, baseline tests and planning week 1',other:'Plan your first training week'};
+ const idx=daysBetween(a,d);let cat;
+ if(idx<90)cat='Foundation: Quant basics, daily reading, habit setup';
+ else if(idx<planSettings().cw*7)cat='Concepts: work through the whole syllabus, start light DILR';
+ else if(d<addDays(c,-88))cat='Practice: sectionals, topic tests and error review';
+ else cat='Mock sprint: full mocks, analysis and error log';
+ const q=Math.floor(idx/91);
+ const others=['Excel and SQL in short sessions, photography basics, start the SIP','System design, public speaking, launch the blog or Instagram page','Business fundamentals reading, script writing','First short film shoot, monetization groundwork'];
+ return {cat,other:q>3?'Keep the habits going and taper other skills':others[q]};
+};
+// Saved start dates from older versions move to 9 Nov automatically, and a reset starts there too.
+migrateMeta=function(){
+ if(state.meta&&['2026-10-12','2026-10-15','2026-10-19','2026-11-01','2026-11-02','2026-11-08'].indexOf(state.meta.startDate)>=0){state.meta.startDate=P1_START;return true;}
+ return false;
+};
+const _p1Fresh=freshState;
+freshState=function(){const s=_p1Fresh();s.meta.startDate=P1_START;return s;};
+const _p1Planner=renderPlanner;
+renderPlanner=function(){return _p1Planner().replace('from 19 Oct 2026','from 9 Nov 2026');};
+// =====================================================================
+// PART 10: fitness starts Mon 9 Nov 2026, and every planner card shows
+// that day's fitness and hobby time. Paste directly ABOVE the final "init();".
+// =====================================================================
+
+// ---------- fitness: 55 weeks, 9 Nov 2026 to CAT day ----------
+fxProg=function(w){return w<=24?'P1':(w<=42?'P2':'P3');};
+FIT_BLOCKS[6].to=42;FIT_BLOCKS[7].from=43;FIT_BLOCKS[7].to=54;FIT_BLOCKS[8].from=55;FIT_BLOCKS[8].to=55;
+FIT_MESO_NOTES.splice(7,3,'Program 3 begins with the mock sprint: fewer sets, same effort, about 45 minutes.','Hold strength through the mock sprint.','Exam week: two light sessions, then rest.');
+FIT_TOTAL=0;for(let w=1;w<=FIT_WEEKS;w++)FIT_TOTAL+=fxWeek(w).target;
+fxCheckpoints=function(){const out=[{w:1,date:FIT_START,label:'Baseline'}];for(let w=5;w<FIT_WEEKS;w+=4)out.push({w,date:fxWeek(w).mon,label:'Checkpoint'});return out;};
+const _p10Year=fxYear;
+fxYear=function(){
+ return _p10Year().replace('58 weeks from 19 Oct 2026','55 weeks from 9 Nov 2026').replace('From June 2027','From July 2027')
+  .replace(/(, )?Program 3 starts/,'')
+  .replace(/(<td>43<\/td>[\s\S]*?<td class="small">)([^<]*)(<\/td>)/,(m,a,n,c)=>a+(n?n+', ':'')+'Program 3 starts'+c);
+};
+const _p10Rules=fxRules;
+fxRules=function(){return _p10Rules().replace('taper in week 58','taper in week '+FIT_WEEKS);};
+
+// ---------- planner: fitness and hobby time on every card ----------
+const P10_TRAIN={1:'UA',2:'LA',4:'UB',5:'LB'};
+function p10Course(date){
+ const idx=daysBetween(p1Anchor(),date),q=Math.floor(idx/91)+1;
+ const pool=(state.courses||[]).filter(c=>num(c.progress)<100&&num(c.q)<=q).sort((a,b)=>num(a.q)-num(b.q));
+ return pool.length?pool[Math.floor(idx/7)%pool.length]:null;
+}
+function p10Items(d){
+ const date=d.date;if(!date||date.charAt(0)==='x'||d.sec==='Exam')return [];
+ const out=[],dw=parse(date).getDay(),taper=d.week==='Taper week',mock=d.sec==='Mock',sprint=d.phase==='Mock sprint',day=x=>state.daily[x]||{};
+ if(rwFitOn(date)){
+  const w=fitWeek(date),wi=fxWeek(w),b=wi.block,k=fxKcal(w),sm=fxStepsMin(w),did=x=>fxIn(x,x).length>0;
+  out.push({k:'f',t:'Morning weigh-in, before food or water',auto:x=>num(day(x).weight)>0});
+  if(wi.taper){
+   if(dw===1||dw===2)out.push({k:'f',m:'30 min',t:'Light session: half the usual sets, stop 4 or more reps short',auto:did});
+  }else if(P10_TRAIN[dw]){
+   const lg=fxIn(date,date)[0],ty=lg?lg.type:(date===todayISO()?fxNext():P10_TRAIN[dw]);
+   out.push({k:'f',m:wi.prog==='P3'?'45 min':'60 min',t:'Workout: '+(FIT_NAME[ty]||'Session')+(FIT_FOCUS[ty]?' ('+FIT_FOCUS[ty].toLowerCase()+')':'')+(wi.deload?'. Deload week: about 40% fewer sets, same weights':'')+'. Morning, or straight after work before your CAT block',auto:did});
+  }else if(dw===3||dw===6)out.push({k:'f',m:'20–30 min',t:'Easy treadmill or cycle',opt:true,auto:x=>(state.cardio||[]).some(c=>c.date===x)});
+  out.push({k:'f',t:'Eat '+b.prot[0]+'+ g protein within '+k[0]+'–'+k[1]+' kcal',auto:x=>num(day(x).protein)>=b.prot[0]&&num(day(x).calories)>0&&num(day(x).calories)<=k[1]});
+  out.push({k:'f',t:'Steps: '+fxStepsText(w),auto:x=>sm?num(day(x).steps)>=sm:num(day(x).steps)>0});
+ }
+ if(!taper&&!mock){
+  const L=x4Cur(),opt=sprint;
+  if(dw===2)out.push({k:'h',m:'15 min',t:L?'Camera school: read lesson "'+L.t+'"':'Camera school: re-read any lesson',opt});
+  if(dw===3){const c=p10Course(date);if(c)out.push({k:'h',m:'30 min',t:'Skill course: '+c.name+' ('+num(c.progress)+'% done). Choose it as "Skill practised" in your log',opt,auto:x=>day(x).skill===c.id});}
+  if(dw===4)out.push({k:'h',m:'20 min',t:'Writing desk: a 50-word take or 20 minutes on a piece',opt,auto:x=>num(x3F().log[x])>0});
+  if(dw===5)out.push({k:'h',m:'2 h',t:'Watch a film with this week\'s lens, then log it in the Content pipeline',opt,auto:x=>state.content.some(c=>c.date===x)});
+  if(dw===6)out.push({k:'h',m:'45 min',t:L?'Camera school: shoot the assignment for "'+L.t+'"':'Photo walk: shoot anything that catches your eye',opt,auto:x=>x4C().shoots.some(s=>s.date===x)});
+  if(dw===0)out.push({k:'h',m:'30 min',t:'Weekly creative challenge: '+X2_PROMPTS[x2CrIdx(mondayOf(date))],opt,auto:x=>!!state.x2.creative[mondayOf(x)]});
+ }
+ return out;
+}
+const _p10Total=plTotal,_p10Done=plDone;
+plTotal=function(d){return _p10Total(d)+p10Items(d).filter(x=>!x.opt).length;};
+plDone=function(d){
+ let c=_p10Done(d);const pd=state.plannerDone||{};
+ p10Items(d).forEach((x,i)=>{if(!x.opt&&(pd[d.date+'#x'+i]||(x.auto&&x.auto(d.date))))c++;});
+ return c;
+};
+function p10Row(d,x,i){
+ const id=d.date+'#x'+i,auto=!!(x.auto&&x.auto(d.date)),on=auto||!!(state.plannerDone||{})[id];
+ return '<label><input type="checkbox" data-pk="'+id+'"'+(on?' checked':'')+(auto?' disabled':'')+'><span>'+(x.m?'<span class="m">'+esc(x.m)+'</span> ':'')+esc(x.t)+(auto?' <span class="tag good">logged</span>':'')+(x.opt?' <span class="tag">optional</span>':'')+'</span></label>';
+}
+const _p10Card=plCard;
+plCard=function(d,open){
+ const h=_p10Card(d,open),it=p10Items(d);if(!it.length)return h;
+ const sec=(k,title)=>{const L=it.map((x,i)=>[x,i]).filter(p=>p[0].k===k);return L.length?'<h4>'+title+'</h4><div class="plk">'+L.map(p=>p10Row(d,p[0],p[1])).join('')+'</div>':'';};
+ return h.replace('<h4>Deliverables from you</h4>',()=>sec('f','Fitness')+sec('h','Hobby time')+'<h4>Deliverables from you</h4>');
+};
+const _p10Planner=renderPlanner;
+renderPlanner=function(){return _p10Planner().replace('The exam date is assumed (28 Nov 2027).',()=>'The exam date is assumed (28 Nov 2027). Each card also lists that day\'s fitness (workouts on Monday, Tuesday, Thursday and Friday, plus the morning weigh-in, food and steps) and a short hobby slot. Items marked "logged" tick themselves from your logs, and optional items do not count toward the card.');};
+// Ticking a hobby item on today's or an earlier card also ticks the Hobby habit for that day.
+const _p10Change=onChange;
+onChange=async function(ev){
+ await _p10Change(ev);
+ const el=ev.target,pk=el&&el.dataset&&el.dataset.pk;if(!pk||!el.checked)return;
+ const m=pk.match(/^(\d{4}-\d\d-\d\d)#x(\d+)$/);if(!m||m[1]>todayISO())return;
+ const d=PLAN.days.find(x=>x.date===m[1]),it=d&&p10Items(d)[+m[2]];
+ if(it&&it.k==='h'){const e=state.daily[m[1]]||{};if(!e.hobby){e.hobby=true;state.daily[m[1]]=e;await save('daily');render();}}
 };
 init();
 })();
